@@ -11,6 +11,8 @@
 
 > [Installation & Setup](#installation--setup)
 
+> [Configuration & Integration](Configuration--Integration)
+
 > [Logging & Debugging](#logging--debugging)
 
 
@@ -18,10 +20,11 @@
 ## Description
 The Connector Library is designed to be added as a dependency to other microservices. It provides centralized validation of the configDefinitions provided by a service at their startup and publishes them to a RabbitMQ queue. This allows the Configuration Service to update and manage configuration definitions dynamically.
 
-The library ensures that:
-- Microservices register their configuration definitions on startup.
-- Validation occurs before publishing to prevent missing or incorrect definitions.
-- Configuration fetch requests are validated at runtime, ensuring that a service can only use a configName if it has provided a definition for it on startup.
+### Features
+- Automatic Validation: Ensures that services provide correctly structured configuration definitions.
+- RabbitMQ Integration: Publishes validated configurations to RabbitMQ for dynamic updates.
+- Runtime Validation: Ensures that services use only those configurations they have registered.
+- Logging & Debugging: Includes structured logging with Trace-ID & Correlation-ID for better tracking.
 
 ## Dependencies
 - `Java` - 17
@@ -61,7 +64,7 @@ mvn spring-boot:run
 
 >**RabbitMQ**
 
-### To include it as dependency in other service
+### To use the Connector Library in your service, add the following Maven dependency to your pom.xml:
 ```
 <dependency>
     <groupId>com.addverb</groupId>
@@ -69,7 +72,31 @@ mvn spring-boot:run
     <version>0.0.1-SNAPSHOT</version>
 </dependency>
 ```
+On startup, your service should send the content of its config.json to the Connector Library, which validates it and publishes it to RabbitMQ.
 
+## Configuration & Integration
+The config.json file should follow this structure:
+```
+{
+  "configDefinitions": [
+    {
+      "configName": "INVENTORY_DASHBOARD_CONFIGURATION",
+      "warehouseProcesses": [
+        {
+          "warehouseProcess": "Cycle count",
+          "definition": "To show visibility of the updated inventory"
+        },
+        {
+          "warehouseProcess": "Stock adjustment",
+          "definition": "To reflect manual inventory corrections"
+        }
+      ]
+    }
+  ]
+}
+
+```
+When a service attempts to fetch a configuration, the Connector Library checks if it had registered at least one process and definition for that configuration at startup. If not, the request is rejected.
 
 ## Logging & Debugging
 
