@@ -1,14 +1,13 @@
 # Configuration-Connector
 
 
-
 ## Contents
 
 > [Description](#description)
 
 > [Dependencies](#dependencies) 
 
-> [How to Run](#how)
+> [How to Run](#how )
 
 > [Installation & Setup](#installation)
 
@@ -24,7 +23,7 @@ The library ensures that:
 - Validation occurs before publishing to prevent missing or incorrect definitions.
 - Configuration fetch requests are validated at runtime, ensuring that a service can only use a configName if it has provided a definition for it on startup.
 
-## Dependancies
+## Dependencies
 - `Java` - 17
 - `springboot` - 3.4.2
 - `RabbitMQ`
@@ -48,13 +47,6 @@ docker-compose up -d
 // Run locally using Spring Boot
 mvn spring-boot:run
 
-// To include it as a dependency in other service
-<dependency>
-	<groupId>com.addverb</groupId>
-	<artifactId>connector</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-</dependency>
-
 ```
 
 ## Installation and Setup
@@ -68,6 +60,15 @@ mvn spring-boot:run
 >**Docker & Docker Compose**
 
 >**RabbitMQ**
+
+### To include it as dependency in other service
+```
+<dependency>
+    <groupId>com.addverb</groupId>
+    <artifactId>connector</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+</dependency>
+```
 
 
 ## Logging & Debugging
