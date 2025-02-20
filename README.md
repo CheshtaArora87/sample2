@@ -7,11 +7,11 @@
 
 > [Dependencies](#dependencies) 
 
-> [How to Run](#how )
+> [How to Run](#how-to-run)
 
-> [Installation & Setup](#installation)
+> [Installation & Setup](#installation--setup)
 
-> [Logging & Debugging](#logging)
+> [Logging & Debugging](#logging--debugging)
 
 
 
@@ -49,7 +49,7 @@ mvn spring-boot:run
 
 ```
 
-## Installation and Setup
+## Installation & Setup
 
 ### `Prerequisites`
 
