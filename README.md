@@ -5,6 +5,8 @@
 
 > [Description](#description)
 
+> [Validation](#validation)
+
 > [Dependencies](#dependencies) 
 
 > [How to Run](#how-to-run)
@@ -18,13 +20,41 @@
 
 
 ## Description
-The Connector Library is designed to be added as a dependency to other microservices. It provides centralized validation of the configDefinitions provided by a service at their startup and publishes them to a RabbitMQ queue. This allows the Configuration Service to update and manage configuration definitions dynamically.
+The Connector Library provides a mechanism for microservices to validate and manage configurations at startup. It automatically scans the config.json file of the service, performs validation, and publishes configuration definitions to a RabbitMQ queue.
+
 
 ### Features
-- Automatic Validation: Ensures that services provide correctly structured configuration definitions.
-- RabbitMQ Integration: Publishes validated configurations to RabbitMQ for dynamic updates.
-- Runtime Validation: Ensures that services use only those configurations they have registered.
+
+- Automatic Validation: The library scans the content of config.json of service during the startup of service and ensures that the service provide correctly structured configuration definitions.
+- Enum-Based Configuration Validation: Scans all enum classes implementing ConfigChecker and ensures all enum values exist in config.json. If any are missing, the service build and startup fail.
+- RabbitMQ Integration: Publishes validated configuration definitions to RabbitMQ for dynamic updates.
 - Logging & Debugging: Includes structured logging with Trace-ID & Correlation-ID for better tracking.
+
+### Validation
+1. Load config.json
+
+- Reads config.json at startup.
+- Ensures configDefinitions are present and not empty.
+- Validates that each configuration has a configName and at least one warehouseProcess.
+- Checks that each warehouseProcess has a processName and a definition.
+
+2. Validate Enum Configurations
+
+- Scans the package com.addverb for classes implementing ConfigChecker.
+- Ensures that only enums implement ConfigChecker.
+- Checks if all values from these enums exist in config.json.
+
+3. Publishing Configuration Definitions to RabbitMQ queue
+
+- Sends the validated configuration definitions to a RabbitMQ queue using ConfigPublisher.
+- If publishing fails, the service startup is also halted.
+
+4. Failure Handling
+
+- If any validation step fails, an error is logged.
+- The service build fails, preventing startup.
+- Detailed failure messages are provided in logs1. .
+
 
 ## Dependencies
 - `Java` - 17
@@ -41,11 +71,8 @@ git clone https://gitlab.addverb.com/addverb/capstone2k25/.git
 
 cd configuration-connector 
 
-// Build the project
+// Build the project so that it can be used as dependency
 mvn clean install
-
-// Run using Docker Compose
-docker-compose up -d
 
 // Run locally using Spring Boot
 mvn spring-boot:run
@@ -72,10 +99,29 @@ mvn spring-boot:run
     <version>0.0.1-SNAPSHOT</version>
 </dependency>
 ```
-On startup, your service should send the content of its config.json to the Connector Library, which validates it and publishes it to RabbitMQ.
+### Additionally, add the following Maven plugin to ensure configuration validation occurs before the service starts:
+```
+<plugin>
+    <groupId>org.codehaus.mojo</groupId>
+    <artifactId>exec-maven-plugin</artifactId>
+    <version>3.1.0</version>
+    <executions>
+        <execution>
+            <phase>compile</phase>  
+            <goals>
+                <goal>java</goal>
+            </goals>
+        </execution>
+    </executions>
+    <configuration>
+        <mainClass>com.addverb.connector.ConnectorApplication</mainClass>
+        <classpathScope>runtime</classpathScope>
+    </configuration>
+</plugin>
+```
 
 ## Configuration & Integration
-The config.json file should follow this structure:
+The config.json file should be placed in src/main/resources and should follow this structure:
 ```
 {
   "configDefinitions": [
@@ -96,16 +142,17 @@ The config.json file should follow this structure:
 }
 
 ```
-When a service attempts to fetch a configuration, the Connector Library checks if it had registered at least one process and definition for that configuration at startup. If not, the request is rejected.
+### Implementing Enums for Configuration Fetching
+
+To fetch any configuration, you need to create enum classes that implement the ConfigChecker interface, as the fetchConfig function only accepts objects of that type.
+
 
 ## Logging & Debugging
 
-- **`Trace-ID & Correlation-ID`** added for debugging.
+- Generates a correlation ID for tracking the entire configuration validation process.
 
-- **`Structured logging`** using Spring Boot Logger.
+- Generates a trace ID for individual fetchConfig() requests.
 
-- **`Logs`** stored in logs/connector.log.
-
-
+- Uses SLF4J for structured logging and troubleshooting.
 
 
