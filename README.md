@@ -31,25 +31,26 @@ The Connector Library provides a mechanism for microservices to validate and man
 - Logging & Debugging: Includes structured logging with Trace-ID & Correlation-ID for better tracking.
 
 ### Validation
-1. Load config.json
+
+#### Load config.json
 
 - Reads config.json at startup.
 - Ensures configDefinitions are present and not empty.
 - Validates that each configuration has a configName and at least one warehouseProcess.
 - Checks that each warehouseProcess has a processName and a definition.
 
-2. Validate Enum Configurations
+#### Validate Enum Configurations
 
 - Scans the package com.addverb for classes implementing ConfigChecker.
 - Ensures that only enums implement ConfigChecker.
 - Checks if all values from these enums exist in config.json.
 
-3. Publishing Configuration Definitions to RabbitMQ queue
+#### Publishing Configuration Definitions to RabbitMQ queue
 
 - Sends the validated configuration definitions to a RabbitMQ queue using ConfigPublisher.
 - If publishing fails, the service startup is also halted.
 
-4. Failure Handling
+#### Failure Handling
 
 - If any validation step fails, an error is logged.
 - The service build fails, preventing startup.
@@ -99,7 +100,7 @@ mvn spring-boot:run
     <version>0.0.1-SNAPSHOT</version>
 </dependency>
 ```
-### Additionally, add the following Maven plugin to ensure configuration validation occurs before the service starts:
+### Additionally, add the following Maven plugin to ensure validation occurs before the service starts:
 ```
 <plugin>
     <groupId>org.codehaus.mojo</groupId>
@@ -154,5 +155,4 @@ To fetch any configuration, you need to create enum classes that implement the C
 - Generates a trace ID for individual fetchConfig() requests.
 
 - Uses SLF4J for structured logging and troubleshooting.
-
 
